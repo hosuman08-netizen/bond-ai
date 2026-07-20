@@ -49,6 +49,11 @@
   }
   function todayTalks(){try{return +(localStorage.getItem('bond_day_'+dayKey(0))||0);}catch(e){return 0;}}
   function bumpToday(){try{localStorage.setItem('bond_day_'+dayKey(0),String(todayTalks()+1));}catch(e){}}
+  function talkWeek(){
+    var out=[];
+    for(var i=6;i>=0;i--) out.push(+(localStorage.getItem('bond_day_'+dayKey(-i))||0));
+    return out;
+  }
   // soft decay once per missed day (return pressure, not wipe)
   try{
     var decayK='bond_decay_'+dayKey(0);
@@ -69,8 +74,13 @@
       if(last && last!==dayKey(0) && score>0) greet='다시 왔네 · 유대 '+score+' 이어서.';
     }catch(e){}
     var tt=todayTalks();
+    var goal=3, gPct=Math.min(100,Math.round(tt/goal*100));
+    var tw=talkWeek(), mx=Math.max.apply(null,tw.concat([1]));
+    var activeDays=tw.filter(function(n){return n>0;}).length;
     root.innerHTML='<div class="card field1" style="border-color:#f472b6"><b>18+</b> 가상 유대 시뮬 · 실관계 아님</div>'
-      +'<div class="card"><span class="chip">유대 <b>'+score+'/100</b></span> <span class="chip">최고 <b>'+best+'</b></span> <span class="chip">세션 <b>'+runs+'</b></span> <span class="chip">오늘 대화 <b>'+tt+'</b></span> <span class="chip">🔥 '+sc+'일'+(sc>=3&&ready?' 🛡️':'')+'</span> <span class="chip">리셋 '+fomoLeft()+'</span>'
+      +'<div class="card"><span class="chip">유대 <b>'+score+'/100</b></span> <span class="chip">최고 <b>'+best+'</b></span> <span class="chip">세션 <b>'+runs+'</b></span> <span class="chip">오늘 대화 <b>'+tt+'/'+goal+'</b></span> <span class="chip">7일 활동일 <b>'+activeDays+'</b></span> <span class="chip">🔥 '+sc+'일'+(sc>=3&&ready?' 🛡️':'')+'</span> <span class="chip">리셋 '+fomoLeft()+'</span>'
+      +'<div style="height:6px;background:#1c1826;border-radius:4px;margin:8px 0 0;overflow:hidden" title="오늘 대화 목표"><i style="display:block;height:100%;width:'+gPct+'%;background:linear-gradient(90deg,#f472b6,#e0b552)"></i></div>'
+      +'<div style="display:flex;align-items:flex-end;gap:3px;height:28px;margin-top:8px">'+tw.map(function(n){var h=Math.max(3,Math.round(n/mx*24));return '<div style="flex:1;height:'+h+'px;background:'+(n>0?'#f472b6':'#2a2438')+';border-radius:2px"></div>';}).join('')+'</div>'
       +(greet?'<p style="font-size:13px;margin:8px 0 0;opacity:.85">'+greet+'</p>':'')
       +'</div>'
       +'<div class="card"><p class="sub">대화/선물로 유대 게이지 · 일일 선물 1회 · 미방문 시 -5 소프트 감쇠</p>'
@@ -110,6 +120,7 @@
       var lastH=hist.shift();
       var n=parseInt(String(lastH).replace(/\D/g,''),10)||0;
       score=Math.max(0,score-n); runs=Math.max(0,runs-1);
+      try{localStorage.setItem('bond_day_'+dayKey(0),String(Math.max(0,todayTalks()-1)));}catch(e){}
       saveAll(); render(); try{legionTrack('undo',{})}catch(e){}
     };
     function doShare(){
