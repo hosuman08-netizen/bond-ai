@@ -179,7 +179,31 @@ function checkIn() {
   saveToCodex({action: 'checkin', bond: bondLevel, invest: investmentScore, ts: Date.now()});
   bumpBondStreak();
   offerSharePeak('checkin');
+  setTimeout(function () { try { showBondMoneyPipe(); } catch (e) {} }, 720);
   if (window.legionTrack) try { legionTrack('activate', { kind: 'checkin', bond: bondLevel }); } catch (e) {}
+}
+
+/** 3H CRO cash hole · 엔터 트랙 */
+function showBondMoneyPipe() {
+  var host = document.getElementById('messages') && document.getElementById('messages').parentNode;
+  host = host || document.body;
+  var el = document.getElementById('moneyPipe');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'moneyPipe';
+    el.style.cssText = 'margin:12px 0;padding:12px;border:1px solid #c5a46e55;border-radius:12px;background:#16121c;text-align:center;font-size:13px';
+    host.appendChild(el);
+  }
+  el.innerHTML =
+    '<div style="color:#e0b552;font-weight:700;margin-bottom:6px">💞 Bond 더 깊게</div>' +
+    '<p style="opacity:.8;font-size:12px;margin:0 0 8px">엔터테인먼트 · AI 시뮬 · 18+ 권장</p>' +
+    '<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center">' +
+    '<a style="display:inline-block;padding:8px 12px;border-radius:10px;border:1px solid #c5a46e55;text-decoration:none;color:#ece8f1" href="mailto:hoyashi95@gmail.com?subject=%5BBond%5D%20%ED%9B%84%EC%9B%90">☕ 후원 문의</a>' +
+    '<button type="button" class="secondary" onclick="shareMoment()">📤 순간 공유</button>' +
+    '<a style="display:inline-block;padding:8px 12px;border-radius:10px;border:1px solid #c5a46e55;text-decoration:none;color:#e0b552" href="https://hosuman08-netizen.github.io/fate-gacha/?utm_source=bond&utm_medium=cross&ref=bond_pipe">🎲 Fate</a>' +
+    '<a style="display:inline-block;padding:8px 12px;border-radius:10px;border:1px solid #c5a46e55;text-decoration:none;color:#e0b552" href="https://hosuman08-netizen.github.io/saju-miniapp/?utm_source=bond&utm_medium=cross&ref=bond_pipe">🔮 사주</a>' +
+    '</div>';
+  try { if (window.legionTrack) legionTrack('money_pipe_shown', { app: 'bond', bond: bondLevel }); } catch (e) {}
 }
 
 function giveGift() {
@@ -262,16 +286,41 @@ function offerSharePeak(reason) {
   if (window.legionTrack) try { legionTrack('share_peak_shown', { reason: reason || 'checkin', bond: bondLevel }); } catch (e) {}
 }
 
+function bondDayKey(offset) {
+  var d = new Date(Date.now() + (offset || 0) * 864e5);
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
 function bumpBondStreak() {
   try {
-    var day = new Date().toISOString().slice(0, 10);
+    var day = bondDayKey(0);
     var last = localStorage.getItem('bond_streak_day');
     var n = parseInt(localStorage.getItem('bond_streak') || '0', 10) || 0;
+    var shieldLast = localStorage.getItem('bond_streak_shield') || '';
     if (last !== day) {
-      var y = new Date(Date.now() - 864e5).toISOString().slice(0, 10);
+      var y = bondDayKey(-1);
+      var y2 = bondDayKey(-2);
+      var froze = false;
+      // Duolingo freeze: 1 missed day, once/7d, if streak≥3
+      if (last && last !== y && last === y2 && n >= 3) {
+        var ready = !shieldLast || ((new Date(day) - new Date(shieldLast)) / 86400000) >= 7;
+        if (ready) {
+          localStorage.setItem('bond_streak_shield', day);
+          last = y;
+          froze = true;
+          try {
+            var tip = document.createElement('div');
+            tip.textContent = '🛡️ 연속 보호막 · ' + n + '일 유지';
+            tip.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#16121c;color:#e0b552;padding:10px 16px;border-radius:12px;z-index:9999;font-size:13px;border:1px solid #c5a46e55';
+            document.body.appendChild(tip);
+            setTimeout(function () { tip.remove(); }, 3000);
+          } catch (e2) {}
+          if (window.legionTrack) try { legionTrack('streak_freeze', { count: n }); } catch (e3) {}
+        }
+      }
       n = (last === y) ? n + 1 : 1;
       localStorage.setItem('bond_streak_day', day);
       localStorage.setItem('bond_streak', String(n));
+      if (window.legionTrack) try { legionTrack('streak', { count: n, froze: froze }); } catch (e) {}
     }
     renderBondStreak();
   } catch (e) {}
@@ -280,11 +329,15 @@ function renderBondStreak() {
   var el = document.getElementById('streak');
   if (!el) return;
   var n = parseInt(localStorage.getItem('bond_streak') || '0', 10) || 0;
+  var shieldLast = localStorage.getItem('bond_streak_shield') || '';
+  var day = bondDayKey(0);
+  var shieldReady = !shieldLast || ((new Date(day) - new Date(shieldLast)) / 86400000) >= 7;
   if (!n) {
     el.textContent = '연속 체크인 0일 — 오늘 첫 체크인으로 시작';
     return;
   }
-  el.textContent = n + '일 연속 체크인 · bond ' + bondLevel + '%';
+  el.textContent = n + '일 연속 체크인 · bond ' + bondLevel + '%'
+    + (n >= 3 && shieldReady ? ' · 🛡️보호 1회' : '');
 }
 
 function saveToCodex(data) {
