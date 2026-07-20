@@ -252,3 +252,13 @@ init();
 // 3H Co-Star bond daily
 (function(){try{var k="bond_d_"+new Date().toISOString().slice(0,10);if(localStorage.getItem(k))return;localStorage.setItem(k,"1");
 setTimeout(function(){if(window.legionTrack)legionTrack("daily_focus",{});},700);}catch(e){}})();
+
+// 3H bond empty CTA
+(function(){try{setTimeout(function(){
+  if(document.getElementById('bond-empty-3h'))return;
+  var m=document.querySelector('main')||document.body;
+  var d=document.createElement('div'); d.id='bond-empty-3h';
+  d.style.cssText='text-align:center;padding:10px;font-size:12px;opacity:.85';
+  d.innerHTML='💞 Start a bond in one tap · <a href="https://hosuman08-netizen.github.io/saju-miniapp/" style="color:#e8b98a">사주와 연결</a>';
+  m.insertBefore(d,m.firstChild);
+},800);}catch(e){}})();
