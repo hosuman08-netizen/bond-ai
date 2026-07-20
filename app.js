@@ -47,6 +47,17 @@
     localStorage.setItem('bond_hist',JSON.stringify(hist));
     localStorage.setItem('bond_best',best);
   }
+  function todayTalks(){try{return +(localStorage.getItem('bond_day_'+dayKey(0))||0);}catch(e){return 0;}}
+  function bumpToday(){try{localStorage.setItem('bond_day_'+dayKey(0),String(todayTalks()+1));}catch(e){}}
+  // soft decay once per missed day (return pressure, not wipe)
+  try{
+    var decayK='bond_decay_'+dayKey(0);
+    var lv=localStorage.getItem('bond_last_visit');
+    if(lv && lv!==dayKey(0) && lv!==dayKey(-1) && !localStorage.getItem(decayK) && score>0){
+      score=Math.max(0,score-5); saveAll(); localStorage.setItem(decayK,'1');
+      try{legionTrack('decay',{score:score})}catch(e){}
+    }
+  }catch(e){}
   function render(){
     var st=JSON.parse(localStorage.getItem('bond_streak')||'{}');
     var sc=st.count||0;
@@ -57,14 +68,16 @@
       localStorage.setItem('bond_last_visit',dayKey(0));
       if(last && last!==dayKey(0) && score>0) greet='다시 왔네 · 유대 '+score+' 이어서.';
     }catch(e){}
+    var tt=todayTalks();
     root.innerHTML='<div class="card field1" style="border-color:#f472b6"><b>18+</b> 가상 유대 시뮬 · 실관계 아님</div>'
-      +'<div class="card"><span class="chip">유대 <b>'+score+'/100</b></span> <span class="chip">최고 <b>'+best+'</b></span> <span class="chip">세션 <b>'+runs+'</b></span> <span class="chip">🔥 '+sc+'일'+(sc>=3&&ready?' 🛡️':'')+'</span> <span class="chip">리셋 '+fomoLeft()+'</span>'
+      +'<div class="card"><span class="chip">유대 <b>'+score+'/100</b></span> <span class="chip">최고 <b>'+best+'</b></span> <span class="chip">세션 <b>'+runs+'</b></span> <span class="chip">오늘 대화 <b>'+tt+'</b></span> <span class="chip">🔥 '+sc+'일'+(sc>=3&&ready?' 🛡️':'')+'</span> <span class="chip">리셋 '+fomoLeft()+'</span>'
       +(greet?'<p style="font-size:13px;margin:8px 0 0;opacity:.85">'+greet+'</p>':'')
       +'</div>'
-      +'<div class="card"><p class="sub">대화/선물로 유대 게이지 · 일일 선물 1회</p>'
+      +'<div class="card"><p class="sub">대화/선물로 유대 게이지 · 일일 선물 1회 · 미방문 시 -5 소프트 감쇠</p>'
       +'<div style="height:10px;background:#1c1826;border-radius:6px;overflow:hidden;margin:10px 0"><i style="display:block;height:100%;width:'+score+'%;background:linear-gradient(90deg,#f472b6,#e0b552)"></i></div>'
       +'<button id="talk">대화 +유대</button> '
       +'<button class="sec" id="gift"'+(dailyGift?' disabled style="opacity:.5"':'')+'>'+(dailyGift?'오늘 선물 ✓':'선물 시뮬')+'</button> '
+      +'<button class="sec" id="undoTalk">↩ 직전 취소</button> '
       +'<button class="sec" id="share">점수 공유</button>'
       +'<p class="sub" style="margin-top:10px">최근: '+(hist.join(' · ')||'-')+'</p></div>'
       +'<div id="sharePeak" style="display:none;margin:10px 0;padding:10px;border:1px solid #f472b644;border-radius:12px;text-align:center">'
@@ -77,7 +90,7 @@
       var d=3+Math.floor(Math.random()*8);
       score=Math.min(100,score+d); runs++; hist.unshift('+'+d); hist=hist.slice(0,8);
       if(score>best)best=score;
-      saveAll(); bumpStreak(); render();
+      bumpToday(); saveAll(); bumpStreak(); render();
       if(score>=80 || score===best){var sp=document.getElementById('sharePeak'); if(sp) sp.style.display='block';}
       try{legionTrack('activate',{d:d,score:score})}catch(e){}
     };
@@ -87,10 +100,17 @@
       var d=8+Math.floor(Math.random()*12);
       score=Math.min(100,score+d); runs++; hist.unshift('G+'+d); hist=hist.slice(0,8);
       if(score>best)best=score;
-      saveAll(); bumpStreak(); render();
+      bumpToday(); saveAll(); bumpStreak(); render();
       var sp=document.getElementById('sharePeak'); if(sp) sp.style.display='block';
       try{legionTrack('activate',{gift:1,score:score})}catch(e){}
       try{legionTrack('share_peak_shown',{score:score})}catch(e){}
+    };
+    document.getElementById('undoTalk').onclick=function(){
+      if(!hist.length)return;
+      var lastH=hist.shift();
+      var n=parseInt(String(lastH).replace(/\D/g,''),10)||0;
+      score=Math.max(0,score-n); runs=Math.max(0,runs-1);
+      saveAll(); render(); try{legionTrack('undo',{})}catch(e){}
     };
     function doShare(){
       var text='Bond AI '+score+'/100 (best '+best+') · 🔥'+sc+'일 · fictional 18+\n'+shareUrl();
