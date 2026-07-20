@@ -72,12 +72,17 @@ function updateFomo() {
     document.getElementById('surprise').textContent = (swing > 0) ? '미궁이 숨을 내쉬었다… bond가 잠깐 살아났다' : '미궁이 차갑게 느껴진다… bond가 스르르 식는다';
   }
   const today = new Date().toDateString();
+  // countdown to local midnight (next check-in window / decay edge)
+  const mid = new Date(); mid.setHours(24, 0, 0, 0);
+  const remM = Math.max(0, Math.floor((mid - now) / 60000));
+  const rh = Math.floor(remM / 60), rm = remM % 60;
+  const clock = `${rh}시간 ${rm}분`;
   if (lastCheckIn !== today && hoursMissed > 18) {
-    el.textContent = `⚠️ 오래 방치됨 • bond ${bondLevel}% (곧 더 멀어진다)`;
+    el.textContent = `⚠️ 오래 방치됨 • bond ${bondLevel}% · 자정까지 ${clock}`;
   } else if (lastCheckIn === today) {
-    el.textContent = `오늘 체크인 완료 • bond ${bondLevel}%`;
+    el.textContent = `오늘 체크인 완료 • bond ${bondLevel}% · 다음 창 ${clock}`;
   } else {
-    el.textContent = `오늘 체크인 안 함 • bond ${bondLevel}%`;
+    el.textContent = `오늘 체크인 안 함 • bond ${bondLevel}% · 창 마감 ${clock}`;
   }
   document.getElementById('bondValue').textContent = bondLevel;
   document.getElementById('investValue').textContent = investmentScore;
@@ -300,6 +305,7 @@ function init() {
   if (hours > 4) LilithPsych.applyDecay(hours);
 
   updateFomo();
+  setInterval(function () { try { updateFomo(); } catch (e) {} }, 60000);
   renderBondStreak();
   showCodex();
   const today = new Date().toDateString();
