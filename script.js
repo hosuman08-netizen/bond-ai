@@ -166,11 +166,15 @@ function checkIn() {
   bondLevel = Math.min(99, bondLevel + gain);
   LilithPsych.investmentGain();
   addMessage('Luna: 고마워... 오늘도 나를 기억해줘서.', 'ai');
-  if (bondLevel > 80 && Math.random() > 0.7) {
-    document.getElementById('surprise').textContent = 'Fate Echo: p20/21에서 "너의 bond"가 느껴진다고...';
+  const sur = document.getElementById('surprise');
+  if (bondLevel > 80 && Math.random() > 0.7 && sur) {
+    sur.textContent = 'Fate Echo: p20/21에서 "너의 bond"가 느껴진다고...';
   }
   updateFomo();
   saveToCodex({action: 'checkin', bond: bondLevel, invest: investmentScore, ts: Date.now()});
+  bumpBondStreak();
+  offerSharePeak('checkin');
+  if (window.legionTrack) try { legionTrack('activate', { kind: 'checkin', bond: bondLevel }); } catch (e) {}
 }
 
 function giveGift() {
@@ -178,7 +182,8 @@ function giveGift() {
   bondLevel = Math.min(99, bondLevel + gain);
   LilithPsych.investmentGain();
   addMessage('Luna: 이거... 나를 위해? 정말 고마워.', 'ai');
-  document.getElementById('surprise').textContent = `선물 효과: bond +${gain} (sunk cost)`;
+  const surG = document.getElementById('surprise');
+  if (surG) surG.textContent = `선물 효과: bond +${gain} (sunk cost)`;
   // near-miss chance on gift
   if (LilithPsych.nearMissStage(bondLevel)) {
     addMessage('Luna: 이거... 너무 소중해서... (거의 말하려다)', 'ai');
@@ -187,15 +192,71 @@ function giveGift() {
   saveToCodex({action: 'gift', bond: bondLevel, invest: investmentScore, ts: Date.now()});
 }
 
+const SHARE_URL = 'https://hosuman08-netizen.github.io/bond-ai/';
+
 function shareMoment() {
   bondLevel = Math.min(99, bondLevel + 4);
   LilithPsych.investmentGain();
-  alert('순간을 다른 Realm에 공유. Cross seed 활성화 (+Codex mutation + p22 fate 영향)');
   addMessage('Luna: 이 순간... 영원히 기억하고 싶어.', 'ai');
   // strong cross seed
   saveToCodex({action: 'share', bond: bondLevel, invest: investmentScore, cross: 'p20/p21/p22', ts: Date.now()});
   updateFomo();
+  try {
+    localStorage.setItem('p23_bond_to_p20', JSON.stringify({ bond: bondLevel, invest: investmentScore, ts: Date.now() }));
+    localStorage.setItem('niobe_k_bond', String((parseInt(localStorage.getItem('niobe_k_bond') || '0', 10) || 0) + 1));
+  } catch (e) {}
+  const text = 'Bond AI · bond ' + bondLevel + '% 순간을 남겼어요. 너도 체크인해봐 💞\n' + SHARE_URL + '\n#BondAI';
+  if (window.legionTrack) try { legionTrack('share', { bond: bondLevel }); } catch (e) {}
+  if (navigator.share) {
+    navigator.share({ title: 'Bond AI', text: text, url: SHARE_URL }).catch(function () {});
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(function () {
+      const s = document.getElementById('surprise');
+      if (s) s.textContent = '공유 텍스트 복사됨 · 붙여넣기 하세요 (+cross seed)';
+    });
+  } else {
+    alert('순간 공유 · cross seed 활성화\n' + text);
+  }
   console.log('%c[Secret] Bond-Layer Echo → full cross to Codex + Fate Layer. Labyrinth breathes.', 'color:#555');
+}
+
+function offerSharePeak(reason) {
+  const peak = document.getElementById('sharePeak');
+  if (!peak) return;
+  peak.hidden = false;
+  peak.innerHTML = '<p>✨ ' + (bondLevel >= 80
+    ? 'Bond가 깊어졌어요 — 지금 순간을 공유하면 cross 보너스'
+    : '체크인 완료 — 친구에게 이 순간을 남겨볼까요?') + '</p>'
+    + '<button type="button" class="primary-cta" onclick="shareMoment();if(window.legionTrack)try{legionTrack(\'share_peak\')}catch(e){}">💞 순간 공유</button> '
+    + '<button type="button" class="secondary" onclick="document.getElementById(\'sharePeak\').hidden=true">나중에</button>';
+  const b = document.getElementById('shareMomentBtn');
+  if (b) b.style.boxShadow = '0 0 0 2px #e8b98a';
+  if (window.legionTrack) try { legionTrack('share_peak_shown', { reason: reason || 'checkin', bond: bondLevel }); } catch (e) {}
+}
+
+function bumpBondStreak() {
+  try {
+    var day = new Date().toISOString().slice(0, 10);
+    var last = localStorage.getItem('bond_streak_day');
+    var n = parseInt(localStorage.getItem('bond_streak') || '0', 10) || 0;
+    if (last !== day) {
+      var y = new Date(Date.now() - 864e5).toISOString().slice(0, 10);
+      n = (last === y) ? n + 1 : 1;
+      localStorage.setItem('bond_streak_day', day);
+      localStorage.setItem('bond_streak', String(n));
+    }
+    renderBondStreak();
+  } catch (e) {}
+}
+function renderBondStreak() {
+  var el = document.getElementById('streak');
+  if (!el) return;
+  var n = parseInt(localStorage.getItem('bond_streak') || '0', 10) || 0;
+  if (!n) {
+    el.textContent = '연속 체크인 0일 — 오늘 첫 체크인으로 시작';
+    return;
+  }
+  el.textContent = n + '일 연속 체크인 · bond ' + bondLevel + '%';
 }
 
 function saveToCodex(data) {
@@ -203,12 +264,19 @@ function saveToCodex(data) {
   codex.unshift(data);
   if (codex.length > 10) codex.pop();
   localStorage.setItem(CODEX_KEY, JSON.stringify(codex));
+  showCodex();
   console.log('%c[Internal] Codex updated — p20/21 mutation possible', 'color:#666');
 }
 
 function showCodex() {
   const list = document.getElementById('codexList');
+  if (!list) return;
   const codex = JSON.parse(localStorage.getItem(CODEX_KEY) || '[]');
+  if (!codex.length) {
+    list.innerHTML = '<div class="empty-cta"><p>아직 연결 기록이 없어요.<br>오늘 체크인하면 여기에 쌓입니다.</p>'
+      + '<button type="button" class="primary-cta" onclick="checkIn()">오늘 체크인</button></div>';
+    return;
+  }
   list.innerHTML = codex.map(c => {
     let extra = '';
     if (c.invest) extra = ` | invest ${c.invest}`;
@@ -219,7 +287,8 @@ function showCodex() {
   const boost = Math.floor(investmentScore / 250) + 1;
   bondLevel = Math.min(99, bondLevel + boost);
   localStorage.setItem('bondLevel', bondLevel);
-  document.getElementById('surprise').textContent = `기억을 되새기니 bond +${boost} (endowment)`;
+  const sur = document.getElementById('surprise');
+  if (sur) sur.textContent = `기억을 되새기니 bond +${boost} (endowment)`;
   updateFomo();
 }
 
@@ -231,6 +300,8 @@ function init() {
   if (hours > 4) LilithPsych.applyDecay(hours);
 
   updateFomo();
+  renderBondStreak();
+  showCodex();
   const today = new Date().toDateString();
   if (lastCheckIn !== today) {
     document.getElementById('messages').innerHTML = '<div class="ai">Luna: ...오늘은 안 올 줄 알았어.</div>';
@@ -241,8 +312,9 @@ function init() {
     console.log('%c[Secret] p23 Bond-Layer Echo seeded in Labyrinth. Cross to p20/21/p22 Codex ready.', 'color:#444');
   }
   // initial endowment display
-  if (investmentScore > 200) {
-    document.getElementById('surprise').textContent = `너와 나눈 시간... ${investmentScore} (이미 너무 늦었어)`;
+  const sur = document.getElementById('surprise');
+  if (investmentScore > 200 && sur) {
+    sur.textContent = `너와 나눈 시간... ${investmentScore} (이미 너무 늦었어)`;
   }
 }
 init();
@@ -252,13 +324,3 @@ init();
 // 3H Co-Star bond daily
 (function(){try{var k="bond_d_"+new Date().toISOString().slice(0,10);if(localStorage.getItem(k))return;localStorage.setItem(k,"1");
 setTimeout(function(){if(window.legionTrack)legionTrack("daily_focus",{});},700);}catch(e){}})();
-
-// 3H bond empty CTA
-(function(){try{setTimeout(function(){
-  if(document.getElementById('bond-empty-3h'))return;
-  var m=document.querySelector('main')||document.body;
-  var d=document.createElement('div'); d.id='bond-empty-3h';
-  d.style.cssText='text-align:center;padding:10px;font-size:12px;opacity:.85';
-  d.innerHTML='💞 Start a bond in one tap · <a href="https://hosuman08-netizen.github.io/saju-miniapp/" style="color:#e8b98a">사주와 연결</a>';
-  m.insertBefore(d,m.firstChild);
-},800);}catch(e){}})();

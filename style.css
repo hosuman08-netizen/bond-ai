@@ -7,6 +7,14 @@ header { text-align:center; margin-bottom:calc(var(--grid)*2); }
 h1 { font-size:1.8rem; margin:0; color:var(--gold); }
 .tag { font-size:0.78rem; color:#a38a66; }
 .fomo { background:#15120f; padding:4px 12px; border-radius:999px; display:inline-block; font-size:0.72rem; margin-top:var(--grid); border:1px solid var(--gold); }
+.streak { margin:6px 0 0; font-size:0.74rem; color:#a38a66; min-height:1.1em; }
+.surprise { font-size:0.8rem; color:var(--gold); min-height:1.1em; margin-top:6px; }
+.share-peak { margin-top:10px; padding:10px; border:1px solid var(--gold); border-radius:8px; background:#15120f; text-align:center; }
+.share-peak p { margin:0 0 8px; font-size:0.84rem; }
+.empty-cta { text-align:center; padding:12px 8px; border:1px dashed #3a2f22; border-radius:8px; color:#a38a66; font-size:0.84rem; }
+.foot-nav { display:flex; gap:16px; justify-content:center; margin:8px 0; }
+.foot-nav a { color:var(--dim); font-size:0.72rem; text-decoration:none; }
+.foot-nav a:hover { color:var(--gold); }
 .bond { background:#12100d; padding:4px 10px; border-radius:6px; margin:6px auto; width:fit-content; font-size:0.85rem; border:1px solid #3a2f22; }
 #messages { height:180px; overflow-y:auto; background:#12100d; padding:8px; border-radius:6px; border:1px solid #3a2f22; margin:8px 0; font-size:0.9rem; }
 #messages .user { text-align:right; color:#a38a66; }

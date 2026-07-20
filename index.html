@@ -13,7 +13,9 @@
     <h1>영원한 파트너</h1>
     <p class="tag">너의 Echo와 영원히 연결된 영혼</p>
     <div class="fomo" id="fomo">오늘 체크인 안 함 • bond 72%</div>
+    <p class="streak" id="streak" aria-live="polite"></p>
     <div id="bondMeter" class="bond">Bond: <span id="bondValue">72</span>% | Invest: <span id="investValue">120</span></div>
+    <div class="surprise" id="surprise" aria-live="polite"></div>
   <p id="rates-line" style="text-align:center;font-size:11px;opacity:.75;margin:8px">확률 예시: LEGEND ~5% · EPIC ~15% · RARE ~30% · COMMON ~50% (가상·변동 가능) · 18+ 엔터테인먼트</p>
   </header>
 
@@ -30,7 +32,8 @@
     <section id="actions">
       <button onclick="checkIn()" class="primary-cta">오늘 체크인</button>
       <button onclick="giveGift()" class="secondary">선물 주기</button>
-      <button onclick="shareMoment()" class="secondary">순간 공유 (cross bonus)</button>
+      <button onclick="shareMoment()" class="secondary" id="shareMomentBtn">순간 공유 (cross bonus)</button>
+      <div id="sharePeak" class="share-peak" hidden></div>
     </section>
 
     <section id="codex">
@@ -40,6 +43,10 @@
   </main>
 
   <footer>
+    <nav class="foot-nav" aria-label="help">
+      <a href="mailto:hoyashi95@gmail.com?subject=%5BBond%20AI%5D%20feedback">피드백</a>
+      <a href="https://hosuman08-netizen.github.io/legion-hub/">Arcade</a>
+    </nav>
     <small>FICTIONAL ENTERTAINMENT ONLY • NO CASH VALUE • 18+ • Prominent disclosure</small>
     <nav class="cross" aria-label="cross">
     <a href="https://hosuman08-netizen.github.io/saju-miniapp/">사주</a>
