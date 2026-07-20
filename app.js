@@ -8,7 +8,7 @@
       +'<div class="card"><button id="reset" class="sec">리셋</button></div>';
     root.querySelectorAll('button[data-i]').forEach(function(b){b.onclick=function(){
       if(b.dataset.v==='1')score=Math.min(100,score+qs[+b.dataset.i].y); else score=Math.max(0,score-8);
-      render();try{legionTrack('activate',{score:score})}catch(e){}
+      if(score>=100){try{legionTrack('share_peak_shown',{score:100})}catch(e){}} render();try{legionTrack('activate',{score:score})}catch(e){}
     };});
     document.getElementById('reset').onclick=function(){score=50;render();};
     if(!document.getElementById('shareBond')){
