@@ -197,7 +197,29 @@ function giveGift() {
   saveToCodex({action: 'gift', bond: bondLevel, invest: investmentScore, ts: Date.now()});
 }
 
-const SHARE_URL = 'https://hosuman08-netizen.github.io/bond-ai/';
+const SHARE_BASE = 'https://hosuman08-netizen.github.io/bond-ai/';
+function bondKId() {
+  try {
+    var id = localStorage.getItem('bond_k_id');
+    if (!id) { id = 'b' + Math.random().toString(36).slice(2, 8); localStorage.setItem('bond_k_id', id); }
+    return id;
+  } catch (e) { return 'share'; }
+}
+function getBondShareUrl() {
+  return SHARE_BASE + '?utm_source=share&utm_medium=app&ref=' + encodeURIComponent(bondKId());
+}
+function captureBondKRef() {
+  try {
+    var q = new URLSearchParams(location.search || '');
+    var ref = q.get('ref');
+    if (!ref || ref === 'share') return;
+    if (ref === bondKId()) return;
+    if (!localStorage.getItem('bond_k_from')) {
+      localStorage.setItem('bond_k_from', ref);
+      if (window.legionTrack) try { legionTrack('k_link', { from: ref }); } catch (e) {}
+    }
+  } catch (e) {}
+}
 
 function shareMoment() {
   bondLevel = Math.min(99, bondLevel + 4);
@@ -210,10 +232,11 @@ function shareMoment() {
     localStorage.setItem('p23_bond_to_p20', JSON.stringify({ bond: bondLevel, invest: investmentScore, ts: Date.now() }));
     localStorage.setItem('niobe_k_bond', String((parseInt(localStorage.getItem('niobe_k_bond') || '0', 10) || 0) + 1));
   } catch (e) {}
-  const text = 'Bond AI · bond ' + bondLevel + '% 순간을 남겼어요. 너도 체크인해봐 💞\n' + SHARE_URL + '\n#BondAI';
+  const url = getBondShareUrl();
+  const text = 'Bond AI · bond ' + bondLevel + '% 순간을 남겼어요. 너도 체크인해봐 💞\n' + url + '\n#BondAI';
   if (window.legionTrack) try { legionTrack('share', { bond: bondLevel }); } catch (e) {}
   if (navigator.share) {
-    navigator.share({ title: 'Bond AI', text: text, url: SHARE_URL }).catch(function () {});
+    navigator.share({ title: 'Bond AI', text: text, url: url }).catch(function () {});
   } else if (navigator.clipboard) {
     navigator.clipboard.writeText(text).then(function () {
       const s = document.getElementById('surprise');
@@ -304,6 +327,7 @@ function init() {
   const hours = Math.floor((now - last) / (1000 * 3600));
   if (hours > 4) LilithPsych.applyDecay(hours);
 
+  captureBondKRef();
   updateFomo();
   setInterval(function () { try { updateFomo(); } catch (e) {} }, 60000);
   renderBondStreak();
