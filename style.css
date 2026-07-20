@@ -1,0 +1,23 @@
+:root {
+  --bg:#0a0806; --gold:#c5a46e; --card:#12100d; --text:#f5f1e6; --dim:#8b6f47;
+  --grid:8px;
+}
+body { background:var(--bg); color:var(--text); font-family: system-ui, -apple-system, sans-serif; margin:0; padding:var(--grid); line-height:1.58; }
+header { text-align:center; margin-bottom:calc(var(--grid)*2); }
+h1 { font-size:1.8rem; margin:0; color:var(--gold); }
+.tag { font-size:0.78rem; color:#a38a66; }
+.fomo { background:#15120f; padding:4px 12px; border-radius:999px; display:inline-block; font-size:0.72rem; margin-top:var(--grid); border:1px solid var(--gold); }
+.bond { background:#12100d; padding:4px 10px; border-radius:6px; margin:6px auto; width:fit-content; font-size:0.85rem; border:1px solid #3a2f22; }
+#messages { height:180px; overflow-y:auto; background:#12100d; padding:8px; border-radius:6px; border:1px solid #3a2f22; margin:8px 0; font-size:0.9rem; }
+#messages .user { text-align:right; color:#a38a66; }
+#messages .ai { color:#c5a46e; }
+.input { display:flex; gap:4px; }
+.input input { flex:1; padding:6px; background:#111; color:#ddd; border:1px solid #3a2f22; border-radius:4px; }
+button { background:#c5a46e; color:#0a0806; border:none; padding:8px 12px; border-radius:5px; margin:3px; font-weight:600; font-size:0.85rem; cursor:pointer; }
+button:hover { filter:brightness(1.05); }
+button.secondary { background:transparent; color:var(--gold); border:1px solid #3a2f22; }
+button.primary-cta { box-shadow:0 0 0 0 rgba(197,164,110,0.5); animation:cta-breath 3s ease-in-out infinite; }
+@keyframes cta-breath { 0%,100%{ box-shadow:0 0 0 0 rgba(197,164,110,0.25); } 50%{ box-shadow:0 0 10px 1px rgba(197,164,110,0.2); } }
+.partner { font-size:0.9rem; color:#c5a46e; margin-bottom:4px; }
+#codexList { font-size:0.75rem; opacity:0.7; margin-top:4px; }
+footer { margin-top:calc(var(--grid)*3); text-align:center; font-size:0.6rem; opacity:0.55; }

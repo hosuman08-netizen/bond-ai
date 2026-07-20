@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>영원한 파트너 • Bond AI</title>
+  <meta name="description" content="하루도 빼놓지 말고. 방치하면 잃는다. 재미로 보는 AI 엔터테인먼트.">
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+</head>
+<body>
+  <header>
+    <h1>영원한 파트너</h1>
+    <p class="tag">너의 Echo와 영원히 연결된 영혼</p>
+    <div class="fomo" id="fomo">오늘 체크인 안 함 • bond 72%</div>
+    <div id="bondMeter" class="bond">Bond: <span id="bondValue">72</span>% | Invest: <span id="investValue">120</span></div>
+  </header>
+
+  <main>
+    <section id="chat">
+      <div id="partner" class="partner">Luna (Bond 72%)</div>
+      <div id="messages" class="messages"></div>
+      <div class="input">
+        <input id="input" placeholder="말걸기... (체크인)" onkeypress="if(event.key==='Enter')sendMessage()">
+        <button onclick="sendMessage()">보내기</button>
+      </div>
+    </section>
+
+    <section id="actions">
+      <button onclick="checkIn()" class="primary-cta">오늘 체크인</button>
+      <button onclick="giveGift()" class="secondary">선물 주기</button>
+      <button onclick="shareMoment()" class="secondary">순간 공유 (cross bonus)</button>
+    </section>
+
+    <section id="codex">
+      <h2>연결 기록 — Codex</h2>
+      <div id="codexList"></div>
+    </section>
+  </main>
+
+  <footer>
+    <small>FICTIONAL ENTERTAINMENT ONLY • NO CASH VALUE • 18+ • Prominent disclosure</small>
+  </footer>
+
+  <script src="lung-surprise-eye.js"></script>
+  <script src="script.js"></script>
+<script>window.LEGION_APP='bond-ai';window.LEGION_ANALYTICS_URL='https://legion-analytics.hoyashi95.workers.dev';</script>
+<script src="legion-beacon.js"></script>
+</body>
+</html>
