@@ -11,6 +11,12 @@
       render();try{legionTrack('activate',{score:score})}catch(e){}
     };});
     document.getElementById('reset').onclick=function(){score=50;render();};
+    if(!document.getElementById('shareBond')){
+      var b=document.createElement('button');b.id='shareBond';b.className='sec';b.style.width='100%';b.style.marginTop='8px';
+      b.textContent='점수 공유';b.onclick=function(){var text='Bond AI '+score+'/100 · fictional · https://hosuman08-netizen.github.io/bond-ai/';
+        if(navigator.clipboard)navigator.clipboard.writeText(text);try{legionTrack('share_peak',{})}catch(e){}};
+      root.appendChild(b);
+    }
   }
   try{legionTrack('session_start',{})}catch(e){}
   render();
