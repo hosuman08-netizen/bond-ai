@@ -3,7 +3,7 @@
   var score=+(localStorage.getItem('bond_score')||0);
   var runs=+(localStorage.getItem('bond_runs')||0);
   var hist=JSON.parse(localStorage.getItem('bond_hist')||'[]');
-  var best=+(localStorage.getItem('bond_best')||0);
+  var best=+(localStorage.getItem('bond_best')||0); var dailyGift=localStorage.getItem('bond_dg')===new Date().toDateString();
   function render(){
     root.innerHTML='<div class="card field1"><span class="chip">유대 <b>'+score+'/100</b></span> <span class="chip">최고 <b>'+best+'</b></span> <span class="chip">세션 <b>'+runs+'</b></span></div>'
       +'<div class="card"><p class="sub">가상 유대 시뮬 · 실관계 아님 · 18+</p>'
@@ -18,6 +18,7 @@
       render(); try{legionTrack('activate',{d:d,score:score})}catch(e){}
     };
     document.getElementById('gift').onclick=function(){
+      if(dailyGift){alert('오늘 선물 시뮬 완료');return;} dailyGift=true; localStorage.setItem('bond_dg',new Date().toDateString());
       var d=8+Math.floor(Math.random()*12); score=Math.min(100,score+d); runs++; hist.unshift('G+'+d); hist=hist.slice(0,6);
       if(score>best)best=score;
       localStorage.setItem('bond_score',score); localStorage.setItem('bond_runs',runs);
