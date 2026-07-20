@@ -248,3 +248,7 @@ function init() {
 init();
 // Legion beacon soft hooks (FULLPOWER DNA)
 (function(){try{if(window.legionTrack){window.legionTrack('app_boot',{});}}catch(e){}})();
+
+// 3H Co-Star bond daily
+(function(){try{var k="bond_d_"+new Date().toISOString().slice(0,10);if(localStorage.getItem(k))return;localStorage.setItem(k,"1");
+setTimeout(function(){if(window.legionTrack)legionTrack("daily_focus",{});},700);}catch(e){}})();
